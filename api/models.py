@@ -4,7 +4,7 @@ import datetime
 from django.core.validators import MinValueValidator,MaxValueValidator
 
 # Create your models here.
-class Cakes(models.Models):
+class Cakes(models.Model):
     cake_name=models.CharField(max_length=100,primary_key=True)
     shape_choices=[
         ("circle","circle"),
