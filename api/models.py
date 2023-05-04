@@ -5,29 +5,33 @@ from django.core.validators import MinValueValidator,MaxValueValidator
 
 # Create your models here.
 class Cakes(models.Model):
-    cake_name=models.CharField(max_length=100,primary_key=True)
+    cake_name=models.CharField(max_length=100,unique=True)
     shape_choices=[
         ("circle","circle"),
     ("rectangle","rectangle"),
     ("oval","oval"),
     ]
-    shape=models.CharField(max_length=10,choices=shape_choices)
+    shape=models.CharField(max_length=10,choices=shape_choices,default="circle")
     layer_choices=[
         ("one","one"),
         ("two","two"),
         ("three","three")
     ]
-    layers=models.CharField(max_length=50,choices=layer_choices)
+    layers=models.CharField(max_length=50,choices=layer_choices,default="one")
     image=models.ImageField(upload_to="images",null=True,blank=True)
-    weight=models.PositiveIntegerField(max_length=50)
-    price=models.PositiveIntegerField(max_length=200)
+    weight=models.CharField(max_length=200)
+    price=models.PositiveIntegerField()
 
     def __str__(self):
         return self.cake_name
+    
+    @property
+    def cake_review(self):
+        return Reviews.objects.filter(cake=self)
 
 class Carts(models.Model):
 
-    cake_name=models.ForeignKey(Cakes,on_delete=models.CASCADE)
+    cake=models.ForeignKey(Cakes,on_delete=models.CASCADE)
     user=models.ForeignKey(User,on_delete=models.CASCADE)
     created_date=models.DateTimeField(auto_now_add=True)
     options=(
@@ -41,7 +45,7 @@ class Carts(models.Model):
 
 class Orders(models.Model):
     
-    cake_name=models.ForeignKey(Cakes,on_delete=models.CASCADE)
+    cake=models.ForeignKey(Cakes,on_delete=models.CASCADE)
     user=models.ForeignKey(User,on_delete=models.CASCADE)
     created_date=models.DateTimeField(auto_now_add=True)
     options=(
@@ -53,14 +57,15 @@ class Orders(models.Model):
         ("return","return")
     )
     status=models.CharField(max_length=200,choices=options,default="order-placed")
-    curDtae=datetime.date.today()
-    expDate=curDtae+datetime.timedelta(days=5)
-    expected_deliverydate=models.DateField(default=expDate)
+    curDate=datetime.date.today()
+    expdate=curDate+datetime.timedelta(days=1)
+    expected_deliverydate=models.DateTimeField(default=expdate)
     address=models.CharField(max_length=300,null=True)
+    matter=models.CharField(max_length=200,null=True)
 
 class Reviews(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE)
-    cake_name=models.ForeignKey(Cakes,on_delete=models.CASCADE)
+    cake=models.ForeignKey(Cakes,on_delete=models.CASCADE)
     comment=models.CharField(max_length=240)
     rating=models.FloatField(validators=[MinValueValidator(1),MaxValueValidator(5)])
 
